@@ -1,0 +1,51 @@
+.chat-element {
+    height: auto;
+    cursor: pointer;
+    position: relative;
+    margin: 0 0 10px 0;
+}
+
+.chat-element::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 5px;
+    height: 0px;
+    background-color: white;
+    border-radius: 4px;
+    transform: translateY(-50%);
+    transition: height 0.2s linear;
+}
+
+.chat-element:hover::before {
+    height: 25px;
+}
+
+.discord-button {
+    position: relative;
+    margin: 0 0 15px 0;
+}
+
+.discord-button::after {
+    content: "";
+    position: absolute;
+    width: 40px;
+    height: 1px;
+    background-color: #ffffff18;
+    top: auto;
+    bottom: -10px;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.image-holder {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 20%;
+    overflow: hidden;
+    margin: auto auto auto auto;
+}

@@ -1,0 +1,34 @@
+.pm-element {
+    display: flex;
+    align-items: center;
+    width: 250px;
+    height: 45px;
+    gap: 10px;
+    cursor: pointer;
+    margin: 5px 0 0 0;
+}
+
+.pm-element:hover {
+    background-color: var(--bg-hover);
+    border-radius: 8px;
+    background-color: #222225;
+}
+
+.pm-element .image-holder {
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    margin-left: 10px;
+    border-radius: 50%;
+}
+
+.pm-element .nick-name {
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #f2f3f5;
+    margin: 5px 0 auto 0;
+}
