@@ -1,10 +1,30 @@
 import { Users, Gem, ShoppingBag, ClipboardList } from "lucide-react";
-import { mockPrivateMessages } from "../elements/PrivateMessageElements";
+// import { mockPrivateMessages } from "../elements/PrivateMessageElements";
 import PrivateMessageElement from "../elements/PrivateMessageElements";
-import type { PrivateMessageElementProps } from "../../types";
+import type { ChatProps } from "../../types";
 import "../../styles/pm-sidebar.css";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-const PrivateMessagesSidebar = () => {
+interface PrivateMessagesSidebarProps {
+    onActiveChatChanged: (chatID : number) => void
+}
+
+const PrivateMessagesSidebar = ({onActiveChatChanged} : PrivateMessagesSidebarProps) => {
+    const [activePrivateChatID, setChat] = useState<number>(0);
+    // const [chats, setChats] = useState([]);
+
+    const chats : ChatProps[] = [];
+
+    const activeChatHandler = (chatID : number) => {
+        setChat(chatID);
+        onActiveChatChanged(chatID);
+    }
+
+    useQuery({queryKey: ["chats"], queryFn: async () => {
+        
+    }})
+
     return (
         <section id="pm-sidebar">
             <button className="new-conversation">Найти или начать беседу</button>
@@ -25,11 +45,14 @@ const PrivateMessagesSidebar = () => {
                     <ClipboardList size={18} />
                     Задания
                 </button>
-                {mockPrivateMessages.map((message: PrivateMessageElementProps) => (
+                {chats.map((chat: ChatProps) => (
                     <PrivateMessageElement
-                        key={message.nickName}
-                        nickName={message.nickName}
-                        profilePicture={message.profilePicture}
+                        key={chat.id}
+                        nickName={chat.nickName}
+                        profilePicture={chat.profilePicture}
+                        id={chat.id}
+                        isActive={activePrivateChatID === chat.id}
+                        onChatSelected={activeChatHandler}
                     />
                 ))}
             </ul>

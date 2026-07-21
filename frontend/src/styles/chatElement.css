@@ -1,3 +1,13 @@
+@keyframes setActiveChat {
+    from {
+        height: 25px;
+    }
+
+    to {
+        height: 35px;
+    }
+}
+
 .chat-element {
     height: auto;
     cursor: pointer;
@@ -9,7 +19,7 @@
     content: "";
     position: absolute;
     top: 50%;
-    left: 0;
+    left: -2px;
     width: 5px;
     height: 0px;
     background-color: white;
@@ -48,4 +58,22 @@
     border-radius: 20%;
     overflow: hidden;
     margin: auto auto auto auto;
+}
+
+.active-group {
+    position: relative;
+}
+
+.active-group::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 5px;
+    height: 25px;
+    background-color: white;
+    border-radius: 4px;
+    transform: translateY(-50%);
+    transition: height 0.2s linear;
+    animation: setActiveChat 0.2s linear forwards;
 }

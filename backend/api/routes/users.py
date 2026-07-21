@@ -1,0 +1,57 @@
+from fastapi import APIRouter, Depends, Response, HTTPException
+from backend.schemas import userInterfaces
+from ..deps import security, config
+from ...db.database import users_collection
+import bcrypt
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+def get_hash_password(password: str):
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+
+
+@router.post("/registration")
+async def register_user(form : userInterfaces.RegistrationForm, response: Response):
+    if(await users_collection.find_one({"email" : form.email})):
+        raise HTTPException(status_code=401, detail="user already exists")
+    
+    token = security.create_access_token(uid="email")
+    
+    user_data = form.model_dump()
+    user_data["password"] = get_hash_password(user_data["password"])
+    await users_collection.insert_one(user_data)
+    
+    response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, token)
+    return {"status" : "ok"}
+
+@router.post("/login")
+async def login_user(form: userInterfaces.LoginForm, response: Response):
+    user = await users_collection.find_one({"email": form.email})
+
+    if not user or not verify_password(form.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    token = security.create_access_token(uid=user["email"])
+    response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, token)
+    return {"status": "ok", "username" : user["username"]}
+
+@router.get("/me")
+def get_user_information(token= Depends(security.access_token_required)):
+    return {"status" : "ok"}
+
+@router.patch("/change-user-info")
+def change_user_info(token= Depends(security.access_token_required)):
+    return {"status" : "ok"}
+
+@router.post("/me/avatar")
+def set_avatar(token= Depends(security.access_token_required)):
+    return {"status" : "ok"}
+
+@router.get("/search")
+def search_user(token= Depends(security.access_token_required)):
+    return {"status" : "ok"}

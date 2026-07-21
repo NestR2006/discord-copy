@@ -1,0 +1,72 @@
+@keyframes fade-out {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.authorization-container {
+    margin: auto auto auto auto;
+    width: 15%;
+    height: 45%;
+    min-width: 300px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background-color: #1e1e1f;
+    box-shadow: 0 0 6px #484747;
+}
+
+.authorization-container form {
+    animation: fade-out 1s ease;
+    animation-fill-mode: forwards;
+}
+
+.authorization-container h2 {
+    color: white;
+    text-align: center;
+}
+
+.authorization-container input {
+    width: 85%;
+    height: 35px;
+    border-radius: 12px;
+    margin: 10px auto 0 auto;
+    outline: none;
+    padding-left: 15px;
+    display: block;
+    background-color: transparent;
+    color: white;
+    border: none;
+    position: relative;
+    border: 1px solid #525050;
+    transition: 0.2s linear;
+}
+
+.authorization-container input:focus {
+    border: 1px solid #888585;
+}
+
+.authorization-container input:not(:placeholder-shown):invalid {
+    box-shadow: 0 0 2px red;
+}
+
+.authorization-container button {
+    width: 80%;
+    height: 35px;
+    border-radius: 18px;
+    border: none;
+    margin: 30px auto auto auto;
+    cursor: pointer;
+    display: block;
+}
+
+.authorization-container p,
+a {
+    color: white;
+    margin: auto;
+}
