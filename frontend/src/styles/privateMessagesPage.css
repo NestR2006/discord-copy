@@ -1,0 +1,9 @@
+#private-messages-page {
+    border-top: 1px solid #3f3c3c;
+    border-left: 1px solid #3f3c3c;
+    border-radius: 6px;
+    display: flex;
+    width: 100%;
+    height: calc(100dvh - 3px);
+    overflow: hidden;
+}

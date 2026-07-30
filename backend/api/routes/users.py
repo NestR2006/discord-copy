@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, HTTPException
+from fastapi import APIRouter, Depends, Response, HTTPException, WebSocket
 from backend.schemas import userInterfaces
 from ..deps import security, config
 from ...db.database import users_collection
@@ -20,10 +20,11 @@ async def register_user(form : userInterfaces.RegistrationForm, response: Respon
     if(await users_collection.find_one({"email" : form.email})):
         raise HTTPException(status_code=401, detail="user already exists")
     
-    token = security.create_access_token(uid="email")
+    token = security.create_access_token(uid="username")
     
     user_data = form.model_dump()
     user_data["password"] = get_hash_password(user_data["password"])
+    user_data["profilePicture"] = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_khOE4aOAg7xfEbWtTl-l6IzjaNvqe9iPJTZg5DJoQQ&s=10"
     await users_collection.insert_one(user_data)
     
     response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, token)
@@ -36,13 +37,18 @@ async def login_user(form: userInterfaces.LoginForm, response: Response):
     if not user or not verify_password(form.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = security.create_access_token(uid=user["email"])
+    token = security.create_access_token(uid=user["username"])
     response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, token)
     return {"status": "ok", "username" : user["username"]}
 
 @router.get("/me")
 def get_user_information(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
+    user = users_collection.find_one({"username" : token.sub})
+    
+    return {
+        "username": user["username"],
+        "profilePicture" : user["profilePicture"],
+            }
 
 @router.patch("/change-user-info")
 def change_user_info(token= Depends(security.access_token_required)):

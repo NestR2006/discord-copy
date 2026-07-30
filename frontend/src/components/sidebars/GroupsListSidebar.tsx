@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom";
 import "../../styles/chatListSidebar.css"
 
 import ChatElement from "../elements/ChatElement"
@@ -38,7 +39,11 @@ const ChatsListSidebar = () => {
     <section id="chats-sidebar">
         <ul className="groups-list">
             {chats.map((chat : ChatsDBProps) => {
-                return <li><ChatElement className={`${chat.id === 1 ? "discord-button" : ""} ${chat.id === activeChatId ? "active-group" : ""}`} id = {chat.id} image={chat.image} onCLick={(chatId: number) => setActiveChat(chatId)}/></li>
+                return <li>
+                        <Link to={chat.id == 1 ? "/contacts" : `/group-chats/${chat.id}`}>
+                            <ChatElement className={`${chat.id === 1 ? "discord-button" : ""} ${chat.id === activeChatId ? "active-group" : ""}`} id = {chat.id} image={chat.image} onCLick={(chatId: number) => setActiveChat(chatId)}/>
+                        </Link>
+                       </li>
             })}
             <button className="add-group">+</button>
         </ul>

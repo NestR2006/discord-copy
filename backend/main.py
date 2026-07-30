@@ -15,3 +15,7 @@ app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets
 @app.get("/")
 def root():
     return FileResponse(path="frontend/dist/index.html")
+
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    return FileResponse("frontend/dist/index.html")

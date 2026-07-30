@@ -6,6 +6,7 @@ import ChatHeader from "../elements/ChatHeader";
 import MessageELement from "../elements/MessageElement";
 
 import { useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import { mockPrivateMessages } from "../elements/PrivateMessageElements"; //pm mock for test
 
@@ -20,7 +21,8 @@ interface PrivateChatWindowProps {
 
 const PrivateChatWindow = ({userID, onMessageSended, messages, username} : PrivateChatWindowProps) => {
     const [text, setText] = useState("");
-
+    const { chatId } = useParams();
+    userID = Number(chatId);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const parentRef = useRef<HTMLDivElement>(null);
 

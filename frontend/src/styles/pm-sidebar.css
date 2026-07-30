@@ -1,6 +1,6 @@
 #pm-sidebar {
-    width: 250px;
-    margin-left: 10px;
+    width: 15%;
+    margin-left: 2px;
     height: 100dvh;
 }
 
@@ -25,9 +25,13 @@
     font-size: 16px;
     font-weight: 700;
     text-align: left;
-    margin-bottom: 5px;
+    margin: 0 auto 5px auto;
     border-radius: 10px;
     position: relative;
+}
+
+.control-buttons.active {
+    background-color: #2c2c30;
 }
 
 .last-button {
@@ -59,18 +63,18 @@
     color: white;
     cursor: pointer;
     font-size: 16px;
-    margin: 10px 0 10px 0;
+    margin: 10px auto 10px auto;
     position: relative;
 }
 
 .new-conversation::before {
     content: "";
     background-color: #3f3c3c;
-    width: 100%;
+    width: 106%;
     height: 1px;
     top: auto;
     bottom: -8px;
-    left: 0px;
+    left: -2px;
     position: absolute;
 }
 
@@ -80,6 +84,10 @@
     height: calc(100dvh - 70px);
     scrollbar-width: none;
     position: relative;
+}
+
+.chats-list a {
+    text-decoration: none;
 }
 
 .chats-list::-webkit-scrollbar {

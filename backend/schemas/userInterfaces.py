@@ -2,7 +2,6 @@ from pydantic import BaseModel, EmailStr
 
 class RegistrationForm(BaseModel):
     username: str
-    nickname: str
     email: EmailStr
     password: str
     

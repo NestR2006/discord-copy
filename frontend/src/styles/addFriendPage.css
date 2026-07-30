@@ -1,0 +1,51 @@
+.add-friend-page {
+    width: 100%;
+    height: calc(100dvh - 70px);
+    margin-top: 20px;
+}
+
+.add-friend-page .title {
+    color: white;
+    margin-left: 50px;
+    font-weight: 600;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.add-friend-page .sub-title {
+    color: white;
+    margin-left: 50px;
+    font-weight: 600;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.input-field {
+    display: flex;
+    background-color: #29292d;
+    width: 90%;
+    height: 50px;
+    border-radius: 10px;
+    margin-left: 50px;
+}
+
+.input-field input {
+    width: 80%;
+    height: 30px;
+    background-color: transparent;
+    border: none;
+    margin: auto 0 auto 0;
+}
+
+.input-field input:focus {
+    border: none;
+}
+
+.input-field .search-button {
+    background-color: #5865f2;
+    color: white;
+    border-radius: 6px;
+    width: auto;
+    height: 35px;
+    margin: auto 0 auto 0;
+    border: none;
+    cursor: pointer;
+}

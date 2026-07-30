@@ -22,7 +22,6 @@ const LoginForm = ({onShowRegistrationForm, onSuccessfulLogin} : LoginFormProps)
                 headers: {
                     "Content-Type": "application/json"
                 },
-                credentials: "include",
                 body: JSON.stringify(form)
             });
             if (!response.ok) {

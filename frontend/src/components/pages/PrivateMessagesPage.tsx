@@ -1,18 +1,18 @@
 import { Outlet } from "react-router"
 import PrivateMessagesSidebar from "../sidebars/PrivateChatsSidebar"
 
+import "../../styles/privateMessagesPage.css"
+
 const PrivateMessagesPage = () => {
 
     const changeChatHandler = (chatID: number) => {
         chatID;
     }
 
-    return (<>
+    return (<div id="private-messages-page">
         <PrivateMessagesSidebar onActiveChatChanged={changeChatHandler}/>
-        <div className="content-container">
-            <Outlet />
-        </div>
-    </>)
+        <Outlet />
+    </div>)
 }
 
 export default PrivateMessagesPage;
