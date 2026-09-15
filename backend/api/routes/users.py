@@ -42,8 +42,8 @@ async def login_user(form: userInterfaces.LoginForm, response: Response):
     return {"status": "ok", "username" : user["username"]}
 
 @router.get("/me")
-def get_user_information(token= Depends(security.access_token_required)):
-    user = users_collection.find_one({"username" : token.sub})
+async def get_user_information(token= Depends(security.access_token_required)):
+    user = await users_collection.find_one({"username" : token.sub})
     
     return {
         "username": user["username"],

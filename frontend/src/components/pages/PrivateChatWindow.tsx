@@ -7,24 +7,41 @@ import MessageELement from "../elements/MessageElement";
 
 import { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
-import { mockPrivateMessages } from "../elements/PrivateMessageElements"; //pm mock for test
+// import { mockPrivateMessages } from "../elements/PrivateMessageElements"; //pm mock for test
 
-import type { MessageStructure } from "../../types";
+import type { SendMessageStructure, Message } from "../../types";
 
 interface PrivateChatWindowProps {
-    userID: number,
-    onMessageSended: (userID: number, newMessage: MessageStructure) => void,
-    messages: MessageStructure[],
+    onMessageSended: (newMessage: SendMessageStructure) => void,
+    messages: Record<string, Message[]>,
     username: string
 }
 
-const PrivateChatWindow = ({userID, onMessageSended, messages, username} : PrivateChatWindowProps) => {
+const PrivateChatWindow = ({ onMessageSended, messages, username }: PrivateChatWindowProps) => {
     const [text, setText] = useState("");
-    const { chatId } = useParams();
-    userID = Number(chatId);
+    const { recieverParamUsername } = useParams();
+    const recieverUsername: string = recieverParamUsername!.toString();
+
+    const chatHistory = messages[recieverUsername];
+
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const parentRef = useRef<HTMLDivElement>(null);
+
+    const { data } = useQuery({
+        queryKey: ["chatHistory"],
+        queryFn: async () => {
+            const response = await fetch(`/chats/chat-history?second_participants=${recieverParamUsername}`, {
+                method: "GET",
+                credentials: "include",
+            })
+
+            const buf = await response.json();
+            console.log(buf);
+            return await response.json();
+        }
+    })
 
     const TextAreaHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);
@@ -37,11 +54,11 @@ const PrivateChatWindow = ({userID, onMessageSended, messages, username} : Priva
             parent.style.height = "auto"
         }
     }
-    
+
     const sendMessageHandler = () => {
         const value = textAreaRef.current?.value.trim();
-        if(value){
-            onMessageSended(userID, {username , profilePicture: userInfo!.profilePicture, message: textAreaRef.current!.value});
+        if (value) {
+            onMessageSended({ senderUsername: username, recieverUsername: recieverUsername!, message: textAreaRef.current!.value });
             setText("");
             if (textAreaRef.current) {
                 textAreaRef.current.style.height = "auto";
@@ -49,29 +66,21 @@ const PrivateChatWindow = ({userID, onMessageSended, messages, username} : Priva
         }
     }
 
-    const userInfo = mockPrivateMessages!.at(userID > 0 ? userID - 1 : 0);
-
-    if(userID == -1){
-        return <section className="private-chat">
-                    <h2 className="default-title">Start new conversation</h2>
-               </section> 
-    }
-
     return <section className="private-chat">
-        <ChatHeader nickName={userInfo!.nickName} profilePicture={userInfo!.profilePicture}/>
+        <ChatHeader username={recieverUsername!} profilePicture={""} />
         <div className="messages-container">
-            {messages?.map((message) => {
-                return <MessageELement username={message.username} message={message.message} imageLink={message.profilePicture} />
+            {data.chatHistory?.map((message) => {
+                return <MessageELement username={message.from} message={message.text} imageLink={""} />
             })}
         </div>
         <div className="message-input-field" ref={parentRef}>
             <Plus fontSize={18} className="input-field-button" />
-            <textarea rows={1} placeholder={`Написать ${userID}`} ref={textAreaRef} className="message-textarea" value={text} onChange={TextAreaHandler} onKeyDown={(e) => {
-                                                                                                                                                    if (e.key === "Enter" && !e.shiftKey) {
-                                                                                                                                                                e.preventDefault();
-                                                                                                                                                                sendMessageHandler();
-                                                                                                                                                    }
-            }}/>
+            <textarea rows={1} placeholder={`Написать ${recieverUsername}`} ref={textAreaRef} className="message-textarea" value={text} onChange={TextAreaHandler} onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessageHandler();
+                }
+            }} />
             <Gift fontSize={18} className="input-field-button" />
             <Sticker fontSize={18} className="input-field-button" />
             <Smile fontSize={18} className="input-field-button" />

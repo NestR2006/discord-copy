@@ -16,7 +16,7 @@ config.JWT_COOKIE_CSRF_PROTECT = False
 
 security = AuthX(config=config)
 
-connections: dict[str, WebSocket] = {}
+messages_transport: dict[str, WebSocket] = {}
 notifications: dict[str, WebSocket] = {}
 
 notificationsDatabase: dict[str, str] = {}

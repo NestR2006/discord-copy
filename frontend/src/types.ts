@@ -7,7 +7,7 @@ export interface ChatElementProps {
 
 export interface PrivateMessageElementProps {
     id: number;
-    nickName: string;
+    username: string;
     profilePicture: string;
     onChatSelected: (chatID: number) => void;
     isActive: boolean;
@@ -15,14 +15,20 @@ export interface PrivateMessageElementProps {
 
 export interface ChatProps {
     id: number;
-    nickName: string;
+    username: string;   
     profilePicture: string;
 }
 
 export interface MessageStructure {
-    username: string,
-    profilePicture: string,
+    from: string,
+    // profilePicture: string,
     message: string
+}
+
+export interface SendMessageStructure {
+    recieverUsername: string,
+    senderUsername: string,
+    message: string,
 }
 
 export interface RegistrationFormBody{
@@ -47,4 +53,16 @@ export interface requestData {
 
 export interface FriendRequestProps {
     requestSenderData: requestData
+    onAccept: (senderUsername: string) => void;
+    onDecline: (senderUsername: string) => void;
+}
+
+export interface Message {
+  from: string;
+  text: string;
+};
+
+export interface PrivateChatProps{
+    username: string,
+    profilePictureLink: string,
 }

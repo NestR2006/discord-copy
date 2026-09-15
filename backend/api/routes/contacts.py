@@ -81,17 +81,22 @@ async def send_notification(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         del notifications[user["username"]]
-
-
-@router.get("/get-test-notification")
-async def test_notification (token = Depends(security.access_token_required)):
-    username = token.sub
-    user_socket = notifications.get(username)
     
-    if not user_socket:
-        raise HTTPException(status_code=404, detail="socket was not found")
+@router.post("/accept-request")
+async def accept_friend_request(senderUsername : str ,token = Depends(security.access_token_required)):
+    reciever = await users_collection.find_one({"username" : token.sub})
     
-    await user_socket.send_json({
-        "profilePicture" : "profilePicture",
-        "username" : "username",
-    })
+    senderFriendsList = await contacts_collection.find_one({"username" : senderUsername})
+    if not senderFriendsList:
+        await contacts_collection.insert_one({"username" : senderUsername, "friends" : [token.sub]})
+    else:
+        await contacts_collection.update_one({"username" : senderUsername}, 
+                                            {"$addToSet" : {"friends" : token.sub}})
+        
+    recieverFriendsList = await contacts_collection.find_one({"username" : reciever["username"]})
+    if not recieverFriendsList:
+        await contacts_collection.insert_one({"username" : reciever["username"], "friends" : [senderUsername]})
+    else:
+        await contacts_collection.update_one({"username" : reciever["username"]}, 
+                                            {"$addToSet" : {"friends" : senderUsername}})
+                

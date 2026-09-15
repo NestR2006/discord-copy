@@ -1,11 +1,14 @@
-import { Search } from "lucide-react"
+// import { Search } from "lucide-react"
 import { useQuery } from "@tanstack/react-query";
 import type { FriendInterface } from "../../types";
 import FriendElement from "./FriendElement";
 
 import "../../styles/friendsList.css"
+import { useState } from "react";
 
 const FriendsList = () => {
+    const [activeFriendElement, setActiveFriendElement] = useState("");
+
     const { data: friends } = useQuery({
         queryKey: ["friends"],
         queryFn: async () => {
@@ -16,13 +19,21 @@ const FriendsList = () => {
         }
     });
 
+    const showMoreOptionsHandler = (username: string) => {
+        setActiveFriendElement(username)
+    }
+
     return <>
         <div className="friends-list">
-            <Search fontSize={12} className="search-icon"/>
+            {/* <Search fontSize={12} className="search-icon"/> */}
             <input type="text" placeholder="Поиск" />
             <ul className="friends">
-                {friends?.map((friend : FriendInterface) => {
-                    return <li><FriendElement username={friend.username} profilePictureLink={friend.profilePicture}/></li>
+                {friends?.map((friend: FriendInterface) => {
+                    return <li>
+                        <FriendElement username={friend.username} profilePictureLink={friend.profilePicture}
+                            onMoreOptionsCLicked={showMoreOptionsHandler}
+                            isMoreOptionsActive={activeFriendElement == friend.username} />
+                    </li>
                 })}
             </ul>
         </div>

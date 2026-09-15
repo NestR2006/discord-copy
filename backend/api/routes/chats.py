@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
-from ..deps import security, config, connections
-from ...db.database import users_collection, chats_collection
+from ..deps import security, config, messages_transport
+from ...db.database import users_collection, chats_collection, chatsHistory_collection
+from ...schemas.messagesSchemas import Message
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -9,39 +10,54 @@ async def create_chat(username: str, token= Depends(security.access_token_requir
     founded_user = await users_collection.find_one({"username" : username})
     if not founded_user:
         raise HTTPException(status_code=402, detail="User was not found")
-    chats_collection.insert_one({"chatID" : 1, "chatMembers" : [founded_user["_id"], token["sub"]]})
+    await chats_collection.insert_one({"chatOwnerUsername" : token.sub, "chatMembers" : [founded_user["username"]]})
 
 @router.get("/")
-def get_chats(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
+async def get_chats(token= Depends(security.access_token_required)):
+    founded_chats = chats_collection.find({"chatOwnerUsername" : token.sub})
+    data = await founded_chats.to_list();
+    resultArray = [];
+    for chat in data:
+        chatMemmberInfo = await users_collection.find_one({"username" : chat["chatMembers"][0]})
+        resultArray.append({"username": chat["chatMembers"][0], "profilePictureLink": chatMemmberInfo["profilePicture"]})
+    return {"chats" : resultArray}
 
-@router.get("/chat-info")
-def get_chat_information(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
-
-@router.patch("/change-chat-info")
-def change_chat_info(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
+@router.post("/send-message")
+async def send_message(message: Message, token = Depends(security.access_token_required)):
+    recieverSocket = messages_transport[message.reciever]
+    
+    participants = sorted([token.sub, message.reciever])
+    
+    if not recieverSocket:
+        raise HTTPException(status_code=404, detail="socket wasn't found")
+    
+    await recieverSocket.send_json({
+        "message" : message.message,
+        "from" : token.sub,
+        "when" : message.date
+    })
+    
+    usersChatHistory = await chatsHistory_collection.find_one({"participants" : participants})
+    if not usersChatHistory:
+        await chatsHistory_collection.insert_one({"participants": participants, "messages": [{"message": message.message, "from" : token.sub}]})
+    else:
+        await chatsHistory_collection.update_one({"participants": participants}, {"$push": {"messages": {"message": message.message, "from": token.sub}}})
+    
+    return {"status" : "sent"}
 
 @router.delete("/delete-chat")
 def delete_chat(token= Depends(security.access_token_required)):
     return {"status" : "ok"}
 
-@router.post("/add-member")
-def add_member(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
-
-@router.delete("/delete-member")
-def delete_member(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
-
-@router.post("/send-message")
-def send_message(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
-
 @router.get("/chat-history")
-def get_chat_history(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
+async def get_chat_history(second_participants : str, token= Depends(security.access_token_required)):
+    sorted_participants = sorted([second_participants, token.sub])
+    
+    chat_history = await chatsHistory_collection.find_one({"participants" : sorted_participants})
+    clean_history_buf = chat_history["messages"]
+    print(clean_history_buf);
+    
+    return {"chatHistory" : clean_history_buf}
 
 @router.patch("/change-message")
 def change_message(token= Depends(security.access_token_required)):
@@ -51,32 +67,34 @@ def change_message(token= Depends(security.access_token_required)):
 def delete_message(token= Depends(security.access_token_required)):
     return {"status" : "ok"}
 
-
-@router.websocket("/trasport-message")
-async def transport_message(message: str, websocket: WebSocket):
-    token = websocket.cookies.get(config.JWT_ACCESS_COOKIE_NAME)
-    if not token:
-        websocket.send_json({
-            "code-status" : 404
-        })
+    
+@router.websocket("/transport-message")
+async def transport_message(websocket: WebSocket):
+    raw_token = websocket.cookies.get(config.JWT_ACCESS_COOKIE_NAME)
+    
+    if not raw_token:
+        await websocket.close(code=4401)
+        return
+    
+    token = security._decode_token(raw_token)
     
     await websocket.accept()
+    messages_transport[token.sub] = websocket
     
-    user = await users_collection.find_one({"username" : token.sub})
-    if not user:
-        websocket.send_json({
-            "code-status" : 404
-        })
-        
     try:
-        await websocket.send_json({
-            "type": "new_chat_created",
-            "chatId": "456",
-            "participants": []
-        })
-            
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
-            del connections[user["username"]]
+        messages_transport.pop(token.sub, None)
+
     
+@router.get("/test-message")
+async def get_test_message(token = Depends(security.access_token_required)):
+    recieverSocket = messages_transport[token.sub]
+    if not recieverSocket:
+        raise HTTPException(status_code=404, detail="socket wasn't found")
+    
+    await recieverSocket.send_json({
+        "message" : "hello 4mo",
+        "from" : "mairon"
+    })
