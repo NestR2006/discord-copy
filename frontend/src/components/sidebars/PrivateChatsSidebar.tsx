@@ -15,9 +15,6 @@ interface PrivateMessagesSidebarProps {
 
 const PrivateMessagesSidebar = ({ onActiveChatChanged, privateChats }: PrivateMessagesSidebarProps) => {
     const [activeButton, setChat] = useState<number>(0);
-    // const [chats, setChats] = useState([]);
-
-    console.log(privateChats);
 
     const activeChatHandler = (chatID: number) => {
         setChat(chatID);

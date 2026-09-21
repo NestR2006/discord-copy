@@ -5,43 +5,47 @@ import { Plus, Gift, Sticker, Smile, Grid3x3 } from "lucide-react";
 import ChatHeader from "../elements/ChatHeader";
 import MessageELement from "../elements/MessageElement";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-// import { mockPrivateMessages } from "../elements/PrivateMessageElements"; //pm mock for test
-
-import type { SendMessageStructure, Message } from "../../types";
+import type { Message } from "../../types";
 
 interface PrivateChatWindowProps {
-    onMessageSended: (newMessage: SendMessageStructure) => void,
-    messages: Record<string, Message[]>,
     username: string
 }
 
-const PrivateChatWindow = ({ onMessageSended, messages, username }: PrivateChatWindowProps) => {
+const PrivateChatWindow = ({ username }: PrivateChatWindowProps) => {
     const [text, setText] = useState("");
     const { recieverParamUsername } = useParams();
+    const [privateChatMessages, setPrivateChatMessages] = useState<Message[]>([]);
+
     const recieverUsername: string = recieverParamUsername!.toString();
 
-    const chatHistory = messages[recieverUsername];
+    useEffect(() => {
+        setPrivateChatMessages([]);
+    }, [recieverUsername]);
 
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const parentRef = useRef<HTMLDivElement>(null);
 
-    const { data } = useQuery({
-        queryKey: ["chatHistory"],
+    const { data, isSuccess } = useQuery({
+        queryKey: ["chatHistory", recieverUsername],
         queryFn: async () => {
             const response = await fetch(`/chats/chat-history?second_participants=${recieverParamUsername}`, {
                 method: "GET",
                 credentials: "include",
             })
 
-            const buf = await response.json();
-            console.log(buf);
             return await response.json();
         }
     })
+
+    useEffect(() => {
+        if (isSuccess) {
+            setPrivateChatMessages(data.chatHistory);
+        }
+    }, [isSuccess, data]);
 
     const TextAreaHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);
@@ -55,22 +59,34 @@ const PrivateChatWindow = ({ onMessageSended, messages, username }: PrivateChatW
         }
     }
 
-    const sendMessageHandler = () => {
-        const value = textAreaRef.current?.value.trim();
-        if (value) {
-            onMessageSended({ senderUsername: username, recieverUsername: recieverUsername!, message: textAreaRef.current!.value });
+    const sendMessageHandler = async () => {
+        const message = textAreaRef.current?.value.trim();
+        if (message) {
+            setPrivateChatMessages((prev) => {
+                return [...prev, { from: username, message: message }];
+            });
+
             setText("");
             if (textAreaRef.current) {
                 textAreaRef.current.style.height = "auto";
             }
+
+            await fetch("/chats/send-message", {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                credentials: "include",
+                body: JSON.stringify({ reciever: recieverUsername, date: "14:88", message: message }),
+            })
         }
     }
 
     return <section className="private-chat">
         <ChatHeader username={recieverUsername!} profilePicture={""} />
         <div className="messages-container">
-            {data.chatHistory?.map((message) => {
-                return <MessageELement username={message.from} message={message.text} imageLink={""} />
+            {privateChatMessages?.map((message: Message) => {
+                return <MessageELement username={message.from} message={message.message} imageLink={""} />
             })}
         </div>
         <div className="message-input-field" ref={parentRef}>

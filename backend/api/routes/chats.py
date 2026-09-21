@@ -24,18 +24,16 @@ async def get_chats(token= Depends(security.access_token_required)):
 
 @router.post("/send-message")
 async def send_message(message: Message, token = Depends(security.access_token_required)):
-    recieverSocket = messages_transport[message.reciever]
+    recieverSocket = messages_transport.get(message.reciever)
     
     participants = sorted([token.sub, message.reciever])
     
-    if not recieverSocket:
-        raise HTTPException(status_code=404, detail="socket wasn't found")
-    
-    await recieverSocket.send_json({
-        "message" : message.message,
-        "from" : token.sub,
-        "when" : message.date
-    })
+    if recieverSocket:
+        await recieverSocket.send_json({
+                "message" : message.message,
+                "from" : token.sub,
+                "when" : message.date
+        })
     
     usersChatHistory = await chatsHistory_collection.find_one({"participants" : participants})
     if not usersChatHistory:
@@ -54,8 +52,11 @@ async def get_chat_history(second_participants : str, token= Depends(security.ac
     sorted_participants = sorted([second_participants, token.sub])
     
     chat_history = await chatsHistory_collection.find_one({"participants" : sorted_participants})
+    
+    if not chat_history:
+        return {"chatHistory" : []}
+    
     clean_history_buf = chat_history["messages"]
-    print(clean_history_buf);
     
     return {"chatHistory" : clean_history_buf}
 

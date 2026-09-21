@@ -1,7 +1,6 @@
 import "./App.css"
 
 import { useState, useEffect } from 'react';
-import { useQueryClient } from "@tanstack/react-query";
 import { Routes, Route } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
@@ -13,18 +12,15 @@ import AddFriendPage from "./components/pages/AddFriendPage";
 import FriendsList from "./components/elements/FriendsList";
 import FriendsRequests from "./components/pages/FriendsRequests";
 
-import type { requestData, Message, SendMessageStructure, PrivateChatProps } from "./types";
+import type { requestData, PrivateChatProps } from "./types";
 
 
 function App() {
-  const queryClient = useQueryClient()
 
   const [userIsLoggined, setAuthState] = useState(false);
   const [friendsRequests, addRequest] = useState<requestData[]>([]);
 
   const [privateChats, setPrivateChats] = useState<PrivateChatProps[]>([]);
-
-  const [privateChatMessages, setPrivateChatMessages] = useState<Record<string, Message[]>>({});
 
   const { data } = useQuery({
     queryKey: ['user'],
@@ -44,33 +40,6 @@ function App() {
       setPrivateChats(data.chats);
     }
   })
-
-  const sendMessageHandler = async (newMessage: SendMessageStructure) => {
-    if (!privateChats.some(chat => chat.username === newMessage.recieverUsername)) {
-      addNewChat(newMessage.recieverUsername);
-      await queryClient.invalidateQueries({ queryKey: ["chatsList"] });
-    }
-
-    setPrivateChatMessages((prev) => {
-      const existing = prev[newMessage.recieverUsername] ?? [];
-      return {
-        ...prev,
-        [newMessage.recieverUsername]: [
-          ...existing,
-          { from: newMessage.senderUsername, text: newMessage.message },
-        ],
-      };
-    });
-
-    await fetch("/chats/send-message", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify({ reciever: newMessage.recieverUsername, date: "14:88", message: newMessage.message }),
-    })
-  };
 
   const addNewChat = async (username: string) => {
     await fetch(`/chats/create-chat?username=${username}`, {
@@ -96,18 +65,7 @@ function App() {
     };
 
     const messages_transport = new WebSocket(`${wsProtocol}//${wsHost}:${wsPort}/chats/transport-message`)
-    messages_transport.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      console.log(data);
-
-      setPrivateChatMessages((prev) => {
-        const existing = prev[data.from] ?? [];
-        return {
-          ...prev,
-          [data.from]: [...existing, { from: data.from, text: data.message }],
-        };
-      });
-
+    messages_transport.onmessage = () => {
       setPrivateChats((prev) => {
         if (prev.some((chat) => chat.username === data.from)) return prev;
         addNewChat(data.from);
@@ -146,7 +104,7 @@ function App() {
         }} />}>
           <Route path='/group-chats/group:groupId' element={null} />
           <Route path='/contacts' element={<PrivateMessagesPage privateChats={privateChats} />} >
-            <Route path=':recieverParamUsername' element={<PrivateChatWindow username={data?.username} messages={privateChatMessages} onMessageSended={sendMessageHandler} />} />
+            <Route path=':recieverParamUsername' element={<PrivateChatWindow username={data?.username} />} />
             <Route path="friends" element={<FriendsPage friendsRequestsAvailable={friendsRequests.length != 0} />}>
               <Route index element={<FriendsList />} />
               <Route path="add-friend" element={<AddFriendPage />} />

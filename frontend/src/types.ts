@@ -59,7 +59,7 @@ export interface FriendRequestProps {
 
 export interface Message {
   from: string;
-  text: string;
+  message: string;
 };
 
 export interface PrivateChatProps{
