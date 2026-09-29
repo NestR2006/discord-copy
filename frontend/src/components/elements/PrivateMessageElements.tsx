@@ -36,11 +36,11 @@ export const mockPrivateMessages: ChatProps[] = [
     { id: 30, username: "silentCoder", profilePicture: "https://i.pravatar.cc/150?img=30" },
 ];
 
-const PrivateMessageElement = ({username, profilePicture, id, onChatSelected, isActive} : PrivateMessageElementProps) => {
+const PrivateChatElement = ({ username, profilePicture, id, onChatSelected, isActive }: PrivateMessageElementProps) => {
     return <div className={`pm-element ${isActive ? "active-chat" : ""}`} onClick={() => onChatSelected(id)}>
-        <div className="image-holder" style={{backgroundImage: `url(${profilePicture})`}} />
+        <div className="image-holder" style={{ backgroundImage: `url(${profilePicture})` }} />
         <div className="nick-name">{username}</div>
     </div>
 }
 
-export default PrivateMessageElement;
+export default PrivateChatElement;

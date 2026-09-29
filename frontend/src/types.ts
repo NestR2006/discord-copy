@@ -66,3 +66,7 @@ export interface PrivateChatProps{
     username: string,
     profilePictureLink: string,
 }
+
+export interface ChatHistoryResponse {
+    chatHistory: Message[];
+}

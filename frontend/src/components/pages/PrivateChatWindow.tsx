@@ -12,17 +12,26 @@ import { useQuery } from "@tanstack/react-query";
 import type { Message } from "../../types";
 
 interface PrivateChatWindowProps {
-    username: string
+    username: string,
+    profilePictureLink: string,
 }
 
-const PrivateChatWindow = ({ username }: PrivateChatWindowProps) => {
+const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowProps) => {
     const [text, setText] = useState("");
     const { recieverParamUsername } = useParams();
+    const [recieverProfilePictureLink, setRecieverProfilePictureLink] = useState("");
     const [privateChatMessages, setPrivateChatMessages] = useState<Message[]>([]);
 
     const recieverUsername: string = recieverParamUsername!.toString();
 
+    const setUserProfilePicture = async (username: string) => {
+        const response = await fetch(`/users/avatar?username=${username}`)
+        const buf = await response.json();
+        setRecieverProfilePictureLink(buf.profilePicture)
+    }
+
     useEffect(() => {
+        setUserProfilePicture(recieverUsername);
         setPrivateChatMessages([]);
     }, [recieverUsername]);
 
@@ -83,10 +92,10 @@ const PrivateChatWindow = ({ username }: PrivateChatWindowProps) => {
     }
 
     return <section className="private-chat">
-        <ChatHeader username={recieverUsername!} profilePicture={""} />
+        <ChatHeader username={recieverUsername!} profilePicture={recieverProfilePictureLink} />
         <div className="messages-container">
             {privateChatMessages?.map((message: Message) => {
-                return <MessageELement username={message.from} message={message.message} imageLink={""} />
+                return <MessageELement username={message.from} message={message.message} imageLink={username == message.from ? profilePictureLink : recieverProfilePictureLink} />
             })}
         </div>
         <div className="message-input-field" ref={parentRef}>

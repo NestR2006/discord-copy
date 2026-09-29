@@ -4,18 +4,13 @@ import type { PrivateChatProps } from "../../types"
 
 import "../../styles/privateMessagesPage.css"
 
-interface PrivateMessagesProps{
+interface PrivateMessagesProps {
     privateChats: PrivateChatProps[]
 }
 
-const PrivateMessagesPage = ({privateChats} : PrivateMessagesProps) => {
-
-    const changeChatHandler = (chatID: number) => {
-        chatID;
-    }
-
+const PrivateMessagesPage = ({ privateChats }: PrivateMessagesProps) => {
     return (<div id="private-messages-page">
-        <PrivateMessagesSidebar onActiveChatChanged={changeChatHandler} privateChats={privateChats}/>
+        <PrivateMessagesSidebar privateChats={privateChats} />
         <Outlet />
     </div>)
 }

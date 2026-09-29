@@ -6,9 +6,13 @@ interface chatHeaderProps {
 }
 
 const СhatHeader = ({username, profilePicture} : chatHeaderProps) => {
+    const avatarStyle = profilePicture
+        ? { backgroundImage: `url("${profilePicture}")` }
+        : { backgroundImage: "none" };
+
     return (
     <section className="chat-header">
-        <div className="image-holder" style={{backgroundImage: `url(${profilePicture})`}}/>
+        <div className="image-holder" style={avatarStyle}/>
         <div className="label">{username}</div>
         <div className="control-buttons-and-search">
             <Phone size={20} className="control-button"/> 

@@ -48,7 +48,7 @@ async def get_user_information(token= Depends(security.access_token_required)):
     return {
         "username": user["username"],
         "profilePicture" : user["profilePicture"],
-            }
+        }
 
 @router.patch("/change-user-info")
 def change_user_info(token= Depends(security.access_token_required)):
@@ -61,3 +61,10 @@ def set_avatar(token= Depends(security.access_token_required)):
 @router.get("/search")
 def search_user(token= Depends(security.access_token_required)):
     return {"status" : "ok"}
+
+@router.get("/avatar")
+async def get_users_profile_picture(username, token = Depends(security.access_token_required)):
+    user_info = await users_collection.find_one({"username" : username});
+    
+    if user_info:
+        return {"profilePicture" : user_info["profilePicture"]}

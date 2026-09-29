@@ -2,7 +2,7 @@ import "./App.css"
 
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Layout from './components/elements/Layout';
 import PrivateMessagesPage from './components/pages/PrivateMessagesPage';
@@ -12,11 +12,9 @@ import AddFriendPage from "./components/pages/AddFriendPage";
 import FriendsList from "./components/elements/FriendsList";
 import FriendsRequests from "./components/pages/FriendsRequests";
 
-import type { requestData, PrivateChatProps } from "./types";
-
+import type { requestData, PrivateChatProps, ChatHistoryResponse } from "./types";
 
 function App() {
-
   const [userIsLoggined, setAuthState] = useState(false);
   const [friendsRequests, addRequest] = useState<requestData[]>([]);
 
@@ -48,6 +46,8 @@ function App() {
     })
   }
 
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     if (!userIsLoggined) return;
 
@@ -65,12 +65,27 @@ function App() {
     };
 
     const messages_transport = new WebSocket(`${wsProtocol}//${wsHost}:${wsPort}/chats/transport-message`)
-    messages_transport.onmessage = () => {
-      setPrivateChats((prev) => {
-        if (prev.some((chat) => chat.username === data.from)) return prev;
+    messages_transport.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (!privateChats.some((chat) => { chat.username == data.from })) {
         addNewChat(data.from);
-        return [...prev, { profilePictureLink: "", username: data.from }];
-      });
+      }
+
+      queryClient.setQueryData(
+        ["chatHistory", data.from],
+        (oldData: ChatHistoryResponse) => {
+          const newData = {
+            ...oldData,
+            chatHistory: [
+              ...oldData.chatHistory,
+              { from: data.from, message: data.message }
+            ]
+          };
+
+          return newData;
+        }
+      );
     };
 
     chatsListMutation.mutate();
@@ -104,7 +119,7 @@ function App() {
         }} />}>
           <Route path='/group-chats/group:groupId' element={null} />
           <Route path='/contacts' element={<PrivateMessagesPage privateChats={privateChats} />} >
-            <Route path=':recieverParamUsername' element={<PrivateChatWindow username={data?.username} />} />
+            <Route path=':recieverParamUsername' element={<PrivateChatWindow username={data?.username} profilePictureLink={data?.profilePicture} />} />
             <Route path="friends" element={<FriendsPage friendsRequestsAvailable={friendsRequests.length != 0} />}>
               <Route index element={<FriendsList />} />
               <Route path="add-friend" element={<AddFriendPage />} />

@@ -113,10 +113,40 @@
     gap: 5px;
     height: auto;
     background-color: transparent;
+
+    width: 100%;
+    min-width: 0;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    position: relative;
 }
 
 .message-block:hover {
     background-color: #29292d;
+}
+
+.message-block .more-options {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+
+    gap: 2px;
+
+    right: 20px;
+    left: auto;
+    top: -6px;
+    bottom: auto;
+}
+
+.more-options .additional-actions {
+    background-color: #2f3036;
+
+    border: none;
+    border-radius: 50%;
+
+    cursor: pointer;
 }
 
 .message-block.image-holder {
@@ -133,6 +163,9 @@
 .layout {
     display: block;
     width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .user-name {
@@ -147,8 +180,11 @@
 .message {
     font-size: 14px;
     font-weight: 400;
-    margin: 3px 0 2px 0;
+    margin: 3px 5px 2px 5px;
     color: white;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .default-title {

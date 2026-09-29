@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from ..deps import security, config, messages_transport
 from ...db.database import users_collection, chats_collection, chatsHistory_collection
 from ...schemas.messagesSchemas import Message
+from uuid import uuid5
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -89,13 +90,13 @@ async def transport_message(websocket: WebSocket):
         messages_transport.pop(token.sub, None)
 
     
-@router.get("/test-message")
-async def get_test_message(token = Depends(security.access_token_required)):
-    recieverSocket = messages_transport[token.sub]
-    if not recieverSocket:
-        raise HTTPException(status_code=404, detail="socket wasn't found")
+# @router.get("/test-message")
+# async def get_test_message(token = Depends(security.access_token_required)):
+#     recieverSocket = messages_transport[token.sub]
+#     if not recieverSocket:
+#         raise HTTPException(status_code=404, detail="socket wasn't found")
     
-    await recieverSocket.send_json({
-        "message" : "hello 4mo",
-        "from" : "mairon"
-    })
+#     await recieverSocket.send_json({
+#         "message" : "hello 4mo",
+#         "from" : "mairon"
+#     })
