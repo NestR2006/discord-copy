@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from ..deps import security, config, messages_transport
 from ...db.database import users_collection, chats_collection, chatsHistory_collection
-from ...schemas.messagesSchemas import Message
-from uuid import uuid5
+from ...schemas.messagesSchemas import Message, DeleteMessageSchema, ChangeMessageSchema
+from uuid import uuid4
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
@@ -29,6 +29,8 @@ async def send_message(message: Message, token = Depends(security.access_token_r
     
     participants = sorted([token.sub, message.reciever])
     
+    message_id = uuid4().time_mid
+    
     if recieverSocket:
         await recieverSocket.send_json({
                 "message" : message.message,
@@ -38,11 +40,16 @@ async def send_message(message: Message, token = Depends(security.access_token_r
     
     usersChatHistory = await chatsHistory_collection.find_one({"participants" : participants})
     if not usersChatHistory:
-        await chatsHistory_collection.insert_one({"participants": participants, "messages": [{"message": message.message, "from" : token.sub}]})
+        await chatsHistory_collection.insert_one(
+            {"participants": participants, 
+             "messages": [{"id" : message_id, "message": message.message, "from" : token.sub, "is_changed": 0}]})
     else:
-        await chatsHistory_collection.update_one({"participants": participants}, {"$push": {"messages": {"message": message.message, "from": token.sub}}})
+        await chatsHistory_collection.update_one(
+            {"participants": participants}, 
+            {"$push": {"messages": 
+                {"id" : message_id, "message": message.message, "from": token.sub, "is_changed": 0}}})
     
-    return {"status" : "sent"}
+    return {"status" : "sent", "ID" : message_id}
 
 @router.delete("/delete-chat")
 def delete_chat(token= Depends(security.access_token_required)):
@@ -61,12 +68,24 @@ async def get_chat_history(second_participants : str, token= Depends(security.ac
     
     return {"chatHistory" : clean_history_buf}
 
-@router.patch("/change-message")
-def change_message(token= Depends(security.access_token_required)):
-    return {"status" : "ok"}
+@router.post("/change-message")
+async def change_message(data: ChangeMessageSchema, token=Depends(security.access_token_required)):
+    sorted_participants = sorted([data.co_owner, token.sub])
+
+    await chatsHistory_collection.update_one(
+        {"participants": sorted_participants, "messages.id": data.message_id},
+        {"$set": {"messages.$.message": data.new_message, "messages.$.is_changed": 1}}
+    )
+
+    return {"status": "ok"}
 
 @router.delete("/delete-message")
-def delete_message(token= Depends(security.access_token_required)):
+async def delete_message(data : DeleteMessageSchema, token= Depends(security.access_token_required)):
+    participant_list = sorted([data.co_owner, token.sub])
+    
+    await chatsHistory_collection.update_one({"participants" : participant_list},
+                                      {"$pull" : {"messages" : {"id" : data.message_id}}})
+    
     return {"status" : "ok"}
 
     
@@ -88,15 +107,3 @@ async def transport_message(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         messages_transport.pop(token.sub, None)
-
-    
-# @router.get("/test-message")
-# async def get_test_message(token = Depends(security.access_token_required)):
-#     recieverSocket = messages_transport[token.sub]
-#     if not recieverSocket:
-#         raise HTTPException(status_code=404, detail="socket wasn't found")
-    
-#     await recieverSocket.send_json({
-#         "message" : "hello 4mo",
-#         "from" : "mairon"
-#     })

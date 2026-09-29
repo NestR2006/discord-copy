@@ -7,9 +7,9 @@ import MessageELement from "../elements/MessageElement";
 
 import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { Message } from "../../types";
+import type { ChatHistoryResponse, Message } from "../../types";
 
 interface PrivateChatWindowProps {
     username: string,
@@ -23,6 +23,8 @@ const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowPr
     const [privateChatMessages, setPrivateChatMessages] = useState<Message[]>([]);
 
     const recieverUsername: string = recieverParamUsername!.toString();
+
+    const queryClient = useQueryClient()
 
     const setUserProfilePicture = async (username: string) => {
         const response = await fetch(`/users/avatar?username=${username}`)
@@ -71,16 +73,12 @@ const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowPr
     const sendMessageHandler = async () => {
         const message = textAreaRef.current?.value.trim();
         if (message) {
-            setPrivateChatMessages((prev) => {
-                return [...prev, { from: username, message: message }];
-            });
-
             setText("");
             if (textAreaRef.current) {
                 textAreaRef.current.style.height = "auto";
             }
 
-            await fetch("/chats/send-message", {
+            const response = await fetch("/chats/send-message", {
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -88,14 +86,77 @@ const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowPr
                 credentials: "include",
                 body: JSON.stringify({ reciever: recieverUsername, date: "14:88", message: message }),
             })
+
+            const data = await response.json();
+            const new_messageID = data.ID;
+
+            setPrivateChatMessages((prev) => {
+                return [...prev, { id: new_messageID, from: username, message: message, is_changed: 0 }];
+            });
         }
+    }
+
+    const deleteMessageHandler = async (messageID: number) => {
+        console.log(messageID);
+
+        const buf = {
+            message_id: messageID,
+            co_owner: recieverUsername,
+        }
+
+        const response = await fetch("/chats/delete-message", {
+            credentials: "include",
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(buf)
+        })
+
+        if (response.ok) {
+            queryClient.setQueryData(
+                ["chatHistory", recieverUsername],
+                (oldData: ChatHistoryResponse) => {
+                    return {
+                        ...oldData,
+                        chatHistory: oldData.chatHistory.filter(
+                            (message) => message.id !== messageID
+                        )
+                    };
+                })
+        }
+    }
+
+    const changeMessageHandler = async (messageID: number, newMessage: string) => {
+        const buf = {
+            new_message: newMessage,
+            co_owner: recieverUsername,
+            message_id: messageID
+        }
+
+        await fetch("/chats/change-message", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(buf),
+        });
+
+        console.log(messageID, newMessage);
     }
 
     return <section className="private-chat">
         <ChatHeader username={recieverUsername!} profilePicture={recieverProfilePictureLink} />
         <div className="messages-container">
             {privateChatMessages?.map((message: Message) => {
-                return <MessageELement username={message.from} message={message.message} imageLink={username == message.from ? profilePictureLink : recieverProfilePictureLink} />
+                return <MessageELement username={message.from}
+                    id={message.id}
+                    message={message.message}
+                    imageLink={username == message.from ? profilePictureLink : recieverProfilePictureLink}
+                    isChanged={message.is_changed}
+                    onDeleteMessage={deleteMessageHandler}
+                    onChangeMessage={changeMessageHandler} />
             })}
         </div>
         <div className="message-input-field" ref={parentRef}>

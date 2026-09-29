@@ -21,7 +21,7 @@
     width: 100%;
     height: calc(100dvh - 50px);
     overflow: auto;
-    padding-bottom: 60px;
+    padding: 20px 0px 60px 0px;
 }
 
 .messages-container::-webkit-scrollbar {
@@ -123,6 +123,10 @@
     position: relative;
 }
 
+.message-block.active {
+    background-color: #29292d;
+}
+
 .message-block:hover {
     background-color: #29292d;
 }
@@ -149,6 +153,20 @@
     cursor: pointer;
 }
 
+.message-block .change-message-field {
+    width: 95%;
+    height: 40px;
+
+    color: white;
+    background-color: #1a1a1e;
+
+    margin-bottom: 8px;
+
+    outline: none;
+    border: none;
+    border-radius: 6px;
+}
+
 .message-block.image-holder {
     border: none;
     border-radius: 50%;
@@ -166,6 +184,18 @@
     min-width: 0;
     overflow-wrap: anywhere;
     word-break: break-word;
+}
+
+.layout .message-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.layout .message-changed-state {
+    margin: auto 0 5px 0;
+
+    color: grey;
 }
 
 .user-name {

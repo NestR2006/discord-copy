@@ -60,6 +60,8 @@ export interface FriendRequestProps {
 export interface Message {
   from: string;
   message: string;
+  id: number;
+  is_changed: number;
 };
 
 export interface PrivateChatProps{

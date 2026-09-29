@@ -1,6 +1,6 @@
 import { Users, Gem, ShoppingBag, ClipboardList } from "lucide-react";
 // import { mockPrivateMessages } from "../elements/PrivateMessageElements";
-import PrivateChatElement from "../elements/PrivateMessageElements";
+import PrivateChatElement from "../elements/PrivateChatElement";
 // import type { ChatProps } from "../../types";
 import "../../styles/pm-sidebar.css";
 import { useState } from "react";
