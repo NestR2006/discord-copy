@@ -26,12 +26,13 @@ const MessageELement = ({ message, username, imageLink, id, isChanged, onDeleteM
     const changeMessageHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key == "Enter") {
             e.preventDefault();
-            if (message != fieldValue) {
-                onChangeMessage(id, fieldValue)
+            const buf = fieldValue.trimStart();
+            if (message != buf && buf.length >= 1) {
+                onChangeMessage(id, buf)
                 setChangedState(true);
             }
-
             setChangeMessageState(false);
+            setValue(buf);
         }
     }
 
@@ -54,13 +55,13 @@ const MessageELement = ({ message, username, imageLink, id, isChanged, onDeleteM
         {showMoreOptions && !changeMessage ?
             <div className="more-options">
                 <button className="additional-actions" onClick={() => { onDeleteMessage(id) }}>
-                    <Trash2 fontSize={13} color="white" />
+                    <Trash2 fontSize={7} color="white" />
                 </button>
                 <button className="additional-actions" onClick={() => { setChangeMessageState(true); }}>
-                    <Pencil fontSize={13} color="white" />
+                    <Pencil fontSize={7} color="white" />
                 </button>
                 <button className="additional-actions">
-                    <Smile fontSize={13} color="white" />
+                    <Smile fontSize={7} color="white" />
                 </button>
             </div>
             :

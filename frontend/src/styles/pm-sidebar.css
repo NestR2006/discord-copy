@@ -1,6 +1,5 @@
 #pm-sidebar {
     width: 14%;
-    /* margin-left: 2px; */
     height: 100dvh;
 }
 
@@ -15,18 +14,26 @@
     display: flex;
     align-items: center;
     gap: 10px;
+
     width: 95%;
     height: 40px;
+
     background-color: transparent;
     color: rgb(173, 171, 171);
+
     border: none;
     cursor: pointer;
+
     transition: 0.2s linear;
+
     font-size: 16px;
     font-weight: 700;
     text-align: left;
+
     margin: 0 auto 5px auto;
+
     border-radius: 10px;
+
     position: relative;
 }
 
@@ -58,18 +65,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
     width: 90%;
-    height: 30px;
+    min-height: 30px;
+    height: auto;
+
     border-radius: 8px;
     background-color: #3b3b3b;
     border: none;
     color: white;
+
     cursor: pointer;
+
     font-size: 16px;
+
     margin: 10px auto 10px auto;
-    position: relative;
-    text-align: center;
     padding: 0 12px;
+    position: relative;
+
+    text-align: center;
+
     box-sizing: border-box;
 }
 

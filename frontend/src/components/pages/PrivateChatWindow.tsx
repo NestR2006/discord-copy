@@ -4,6 +4,7 @@ import { Plus, Gift, Sticker, Smile, Grid3x3 } from "lucide-react";
 
 import ChatHeader from "../elements/ChatHeader";
 import MessageELement from "../elements/MessageElement";
+import MessageSearchResultElement from "../elements/MessagesSearchResultElement";
 
 import { useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -14,13 +15,17 @@ import type { ChatHistoryResponse, Message } from "../../types";
 interface PrivateChatWindowProps {
     username: string,
     profilePictureLink: string,
+    onShowUserMiniprofile: (username: string) => void;
 }
 
-const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowProps) => {
+const PrivateChatWindow = ({ username, profilePictureLink, onShowUserMiniprofile }: PrivateChatWindowProps) => {
     const [text, setText] = useState("");
     const { recieverParamUsername } = useParams();
     const [recieverProfilePictureLink, setRecieverProfilePictureLink] = useState("");
     const [privateChatMessages, setPrivateChatMessages] = useState<Message[]>([]);
+
+    const [searchMessagesState, setSearchMessagesState] = useState(false);
+    const [searchResult, setSearchResult] = useState<Message[]>([])
 
     const recieverUsername: string = recieverParamUsername!.toString();
 
@@ -97,8 +102,6 @@ const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowPr
     }
 
     const deleteMessageHandler = async (messageID: number) => {
-        console.log(messageID);
-
         const buf = {
             message_id: messageID,
             co_owner: recieverUsername,
@@ -146,31 +149,68 @@ const PrivateChatWindow = ({ username, profilePictureLink }: PrivateChatWindowPr
         console.log(messageID, newMessage);
     }
 
+    const seachMessageHandler = (searchArgument: string) => {
+        let buf: Message[] = [];
+
+        privateChatMessages.map((message) => {
+            if (message.message.includes(searchArgument, 0)) {
+                buf.push(message)
+            }
+        })
+
+        setSearchResult(buf);
+        setSearchMessagesState(true);
+    }
+
     return <section className="private-chat">
-        <ChatHeader username={recieverUsername!} profilePicture={recieverProfilePictureLink} />
-        <div className="messages-container">
-            {privateChatMessages?.map((message: Message) => {
-                return <MessageELement username={message.from}
-                    id={message.id}
-                    message={message.message}
-                    imageLink={username == message.from ? profilePictureLink : recieverProfilePictureLink}
-                    isChanged={message.is_changed}
-                    onDeleteMessage={deleteMessageHandler}
-                    onChangeMessage={changeMessageHandler} />
-            })}
-        </div>
-        <div className="message-input-field" ref={parentRef}>
-            <Plus fontSize={18} className="input-field-button" />
-            <textarea rows={1} placeholder={`Написать ${recieverUsername}`} ref={textAreaRef} className="message-textarea" value={text} onChange={TextAreaHandler} onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessageHandler();
-                }
-            }} />
-            <Gift fontSize={18} className="input-field-button" />
-            <Sticker fontSize={18} className="input-field-button" />
-            <Smile fontSize={18} className="input-field-button" />
-            <Grid3x3 fontSize={18} className="input-field-button" />
+        <ChatHeader username={recieverUsername!}
+            profilePicture={recieverProfilePictureLink}
+            onSearchMessage={seachMessageHandler}
+            onCloseSearch={() => { setSearchMessagesState(false) }}
+            onShowUserMiniprofile={onShowUserMiniprofile} />
+        <div className="chat-layout">
+            <div className="messages-layout">
+                <div className="messages-container">
+                    {privateChatMessages?.map((message: Message) => {
+                        return <MessageELement username={message.from}
+                            id={message.id}
+                            message={message.message}
+                            imageLink={username == message.from ? profilePictureLink : recieverProfilePictureLink}
+                            isChanged={message.is_changed}
+                            onDeleteMessage={deleteMessageHandler}
+                            onChangeMessage={changeMessageHandler} />
+                    })}
+                </div>
+                <div className="message-input-field" ref={parentRef}>
+                    <Plus fontSize={18} className="input-field-button" />
+                    <textarea rows={1} placeholder={`Написать ${recieverUsername}`} ref={textAreaRef} className="message-textarea" value={text} onChange={TextAreaHandler} onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            sendMessageHandler();
+                        }
+                    }} />
+                    <Gift fontSize={18} className="input-field-button" />
+                    <Sticker fontSize={18} className="input-field-button" />
+                    <Smile fontSize={18} className="input-field-button" />
+                    <Grid3x3 fontSize={18} className="input-field-button" />
+                </div>
+            </div>
+            {searchMessagesState ?
+                <div className="message-search-container">
+                    <h3 className="counter">{`${searchResult.length} results`}</h3>
+                    <div className="search-result-container">
+                        {searchResult.map((message: Message) => {
+                            return <MessageSearchResultElement username={message.from}
+                                id={message.id}
+                                message={message.message}
+                                imageLink={username == message.from ? profilePictureLink : recieverProfilePictureLink}
+                                isChanged={message.is_changed} />
+                        })}
+                    </div>
+                </div>
+                :
+                null
+            }
         </div>
     </section>
 }

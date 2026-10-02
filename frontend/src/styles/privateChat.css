@@ -2,6 +2,12 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+}
+
+.chat-layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
     position: relative;
 }
 
@@ -16,12 +22,47 @@
     background-color: #1a1a1e;
 }
 
+.messages-layout {
+    width: 100%;
+    height: calc(100dvh - 50px);
+
+    display: flex;
+    flex-direction: column;
+
+    position: relative;
+}
+
 .messages-container {
     background-color: #1a1a1e;
     width: 100%;
     height: calc(100dvh - 50px);
     overflow: auto;
-    padding: 20px 0px 60px 0px;
+    padding: 10px 0px 60px 0px;
+}
+
+.message-search-container {
+    background-color: #121214;
+
+    width: 30%;
+    height: calc(100dvh - 50px);
+
+    overflow: auto;
+}
+
+.message-search-container::-webkit-scrollbar {
+    display: none;
+}
+
+.message-search-container .counter {
+    color: white;
+
+    margin-left: 15px;
+    padding-bottom: 8px;
+
+    border-bottom: 1px solid #19191b;
+
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
 }
 
 .messages-container::-webkit-scrollbar {
@@ -73,14 +114,40 @@
 
 .chat-header .label {
     font-size: 16px;
-    margin: auto 0 auto 0;
+
+    margin: auto auto auto -5px;
+
+    cursor: pointer;
 }
 
 .control-buttons-and-search {
     display: flex;
     align-items: center;
+
     gap: 15px;
+
     margin-left: auto;
+
+    display: relative;
+}
+
+.control-buttons-and-search .close-search {
+    content: "";
+
+    position: absolute;
+
+    color: white;
+
+    background-color: transparent;
+
+    border: none;
+
+    cursor: pointer;
+
+    top: 12px;
+    right: 15px;
+    bottom: auto;
+    left: auto;
 }
 
 .control-button {
@@ -138,19 +205,32 @@
 
     gap: 2px;
 
+    background-color: #2f3036;
+
     right: 20px;
     left: auto;
     top: -6px;
     bottom: auto;
+
+    width: auto;
+    height: 20px;
+
+    border-radius: 5px;
 }
 
 .more-options .additional-actions {
-    background-color: #2f3036;
+    background-color: transparent;
 
     border: none;
     border-radius: 50%;
 
     cursor: pointer;
+
+    transition: 0.2s linear;
+}
+
+.more-options .additional-actions:hover {
+    color: white;
 }
 
 .message-block .change-message-field {
@@ -222,4 +302,31 @@
     font-weight: 800;
     margin: auto 0 auto 0;
     text-align: center;
+}
+
+.search-result-container {
+    overflow: auto;
+}
+
+.search-result-message-block {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    height: auto;
+    background-color: transparent;
+
+    width: 95%;
+    min-width: 0;
+    min-height: 40px;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    position: relative;
+
+    border-radius: 6px;
+
+    background-color: #29292d;
+
+    margin: 10px auto 0 auto;
 }

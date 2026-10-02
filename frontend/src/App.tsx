@@ -11,6 +11,7 @@ import FriendsPage from "./components/pages/FriendsPage";
 import AddFriendPage from "./components/pages/AddFriendPage";
 import FriendsList from "./components/elements/FriendsList";
 import FriendsRequests from "./components/pages/FriendsRequests";
+import UserMiniprofile from "./components/elements/UserMiniprofile";
 
 import type { requestData, PrivateChatProps, ChatHistoryResponse } from "./types";
 
@@ -19,6 +20,12 @@ function App() {
   const [friendsRequests, addRequest] = useState<requestData[]>([]);
 
   const [privateChats, setPrivateChats] = useState<PrivateChatProps[]>([]);
+
+  // const [miniprofileInfo, setUserInfo] = useState({ nickanme: "ABOBA", "registrerData": "11.09.2001" })
+  const [miniprofileShowingStateAndInfo, setShowingState] = useState({
+    state: false,
+    username: ""
+  });
 
   const { data } = useQuery({
     queryKey: ['user'],
@@ -111,15 +118,34 @@ function App() {
   }
 
 
+  const showUserMiniprofileHandler = (username: string) => {
+    setShowingState({
+      state: true,
+      username: username
+    });
+  }
+
   return (
-    <>
+    <section id="App">
+      {miniprofileShowingStateAndInfo.state ?
+        <UserMiniprofile
+          username={miniprofileShowingStateAndInfo.username}
+          onClose={() => {
+            setShowingState({
+              state: false,
+              username: ""
+            });
+          }} /> :
+        null
+      }
       <Routes>
         <Route path='/' element={<Layout data={data} userIsLoggined={userIsLoggined} setAuthState={() => {
           setAuthState(true);
         }} />}>
           <Route path='/group-chats/group:groupId' element={null} />
           <Route path='/contacts' element={<PrivateMessagesPage privateChats={privateChats} />} >
-            <Route path=':recieverParamUsername' element={<PrivateChatWindow username={data?.username} profilePictureLink={data?.profilePicture} />} />
+            <Route path="" element={<h1 className="start-label">Here is gonna start your history</h1>} />
+            <Route path=':recieverParamUsername' element={<PrivateChatWindow username={data?.username} profilePictureLink={data?.profilePicture} onShowUserMiniprofile={showUserMiniprofileHandler} />} />
             <Route path="friends" element={<FriendsPage friendsRequestsAvailable={friendsRequests.length != 0} />}>
               <Route index element={<FriendsList />} />
               <Route path="add-friend" element={<AddFriendPage />} />
@@ -128,7 +154,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
-    </>
+    </section>
   );
 }
 

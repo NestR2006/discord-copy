@@ -12,7 +12,7 @@ interface PrivateMessagesSidebarProps {
 }
 
 const PrivateMessagesSidebar = ({ privateChats }: PrivateMessagesSidebarProps) => {
-    const [activeButton, setChat] = useState<string>("");
+    const [activeButton, setChat] = useState<string>("Friends");
 
     const activeChatHandler = (chatID: string) => {
         setChat(chatID);
